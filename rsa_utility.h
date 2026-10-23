@@ -21,3 +21,5 @@ struct SecretKey scan_secret_key(void);
 struct PublicKey scan_public_key(void);
 struct PrivateKey to_private_key(struct SecretKey key);
 struct PublicKey to_public_key(struct SecretKey key);
+
+#endif
