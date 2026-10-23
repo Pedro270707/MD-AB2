@@ -2,11 +2,13 @@
 #include "rsa_math.h"
 
 int get_character_code(char c) {
-    
+    if (c == ' ') return 28;
+    return c - 'A' + 2;
 }
 
 char get_character(int i) {
-    
+    if (i == 28) return ' ';
+    return (char) (i - 2 + 'A');
 }
 
 void string_to_int_array(char str[], int arr[], int size) {
