@@ -12,11 +12,16 @@ char get_character(int i) {
 }
 
 void string_to_int_array(char str[], int arr[], int size) {
-    
+    for (int i = 0; i < size; i++) {
+        arr[i] = get_character_code(str[i]);
+    }
 }
 
 void int_array_to_string(int arr[], char str[], int size) {
-    
+    for (int i = 0; i < size; i++) {
+        str[i] = get_character(arr[i]);
+    }
+    str[size] = '\0';
 }
 
 // Exponenciacao modular rapida
