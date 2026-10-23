@@ -8,8 +8,8 @@ struct SecretKey {
 };
 
 struct PrivateKey {
+    int n;
     int d;
-    int e;
 };
 
 struct PublicKey {
