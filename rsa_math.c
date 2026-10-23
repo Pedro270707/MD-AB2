@@ -27,8 +27,9 @@ static int gcd_internal(int a, int b, int quotient_amount, int quotients[], int 
         quotient_amount--;
         int last_result = 0;
         int result = 1;
+        int temp;
         for (int i = quotient_amount - 1; i >= 0; i--) {
-            int temp = result;
+            temp = result;
             result = quotients[i] * result + last_result;
             last_result = temp;
         }
