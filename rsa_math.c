@@ -22,9 +22,37 @@ int mod_pow(int a, int b, int n) {
     
 }
 
+static int gcd_internal(int a, int b, int quotient_amount, int quotients[], int coefficients[2]) {
+    if (b == 0) {
+        quotient_amount--;
+        int last_result = 0;
+        int result = 1;
+        for (int i = quotient_amount - 1; i >= 0; i--) {
+            int temp = result;
+            result = quotients[i] * result + last_result;
+            last_result = temp;
+        }
+
+        if (quotient_amount % 2 == 0) {
+            last_result *= -1;
+        } else {
+            result *= -1;
+        }
+
+        coefficients[0] = last_result;
+        coefficients[1] = result;
+
+        return a;
+    }
+    quotients[quotient_amount] = a / b;
+    return gcd_internal(b, a % b, quotient_amount + 1, quotients, coefficients);
+}
+
 // Calcula os coeficientes x e y tais que xa + yb = mdc(a, b). Retorna: mdc(a, b).
-int gcd(int a, int b, int quotient_amount, int quotients[], int coefficients[2]) {
-    
+int gcd(int a, int b, int coefficients[2]) {
+    int quotients[1024];
+
+    return gcd_internal(a, b, 0, quotients, coefficients);
 }
 
 // Primeiro, calcula MDC entre a e m.

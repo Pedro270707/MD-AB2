@@ -6,7 +6,7 @@ char get_character(int i);
 void string_to_int_array(char str[], int arr[], int size);
 void int_array_to_string(int arr[], char str[], int size);
 int mod_pow(int a, int b, int n);
-int gcd(int a, int b, int quotient_amount, int quotients[], int coefficients[2]);
+int gcd(int a, int b, int coefficients[2]);
 int inverse_mod(int a, int m);
 
 #endif
