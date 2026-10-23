@@ -12,7 +12,7 @@ struct PublicKey scan_public_key() {
     
 }
 
-// Retorna uma chave privada (d, e) a partir de (p, q, e).
+// Retorna uma chave privada (n, d) a partir de (p, q, e).
 struct PrivateKey to_private_key(struct SecretKey key) {
     // Calcular d: d = inverso multiplicativo modular de e (mod (p - 1)(q - 1)).
     int d = inverse_mod(key.e, (key.p - 1) * (key.q - 1));
