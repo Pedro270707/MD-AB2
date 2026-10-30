@@ -19,11 +19,15 @@ struct IntList *il_create() {
     return il_create_with_capacity(1);
 }
 
-void il_increase_capacity(struct IntList *list, int new_capacity) {
-    if (new_capacity <= list->capacity) {
+void il_increase_capacity(struct IntList **list, int new_capacity) {
+    if (new_capacity <= (*list)->capacity) {
         return;
     }
-    list->capacity = new_capacity;
+    struct IntList *new_list = il_create_with_capacity(new_capacity);
+    for (int i = 0; i < (*list)->size; i++) {
+        new_list->arr[i] = il_get(*list, i);
+    }
+    *list = new_list;
 }
 
 void il_add_at_index(struct IntList *list, int index, uint32_t value) {
@@ -38,7 +42,7 @@ void il_add_at_index(struct IntList *list, int index, uint32_t value) {
     list->arr[index] = value;
     list->size++;
     if (list->size == list->capacity) {
-        il_increase_capacity(list, (int) (list->capacity * 1.25) + 1);
+        il_increase_capacity(&list, (int) (list->capacity * 1.25) + 1);
     }
 }
 
