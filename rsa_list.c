@@ -24,6 +24,7 @@ void il_increase_capacity(struct IntList **list, int new_capacity) {
         return;
     }
     struct IntList *new_list = il_create_with_capacity(new_capacity);
+    new_list->size = (*list)->size;
     for (int i = 0; i < (*list)->size; i++) {
         new_list->arr[i] = il_get(*list, i);
     }
