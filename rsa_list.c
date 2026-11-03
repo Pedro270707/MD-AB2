@@ -1,5 +1,6 @@
 #include <stddef.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include "rsa_list.h"
 
 struct IntList *il_create_with_capacity(int capacity) {

@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <string.h>
+#include <inttypes.h>
+#include "rsa_bigint.h"
 #include "rsa_math.h"
 #include "rsa_utility.h"
 
