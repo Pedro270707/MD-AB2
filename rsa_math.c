@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "rsa_list.h"
 #include "rsa_math.h"
 
 int get_character_code(char c) {
@@ -29,15 +30,15 @@ int mod_pow(int a, int b, int n) {
     
 }
 
-static int gcd_internal(int a, int b, int quotient_amount, int quotients[], int coefficients[2]) {
+static int gcd_internal(int a, int b, struct IntList **quotients, int coefficients[2]) {
     if (b == 0) {
-        quotient_amount--;
+        int quotient_amount = (*quotients)->size - 1;
         int last_result = 0;
         int result = 1;
         int temp;
         for (int i = quotient_amount - 1; i >= 0; i--) {
             temp = result;
-            result = quotients[i] * result + last_result;
+            result = il_get(*quotients, i) * result + last_result;
             last_result = temp;
         }
 
@@ -52,15 +53,19 @@ static int gcd_internal(int a, int b, int quotient_amount, int quotients[], int 
 
         return a;
     }
-    quotients[quotient_amount] = a / b;
-    return gcd_internal(b, a % b, quotient_amount + 1, quotients, coefficients);
+    il_add(quotients, a / b);
+    return gcd_internal(b, a % b, quotients, coefficients);
 }
 
 // Calcula os coeficientes x e y tais que xa + yb = mdc(a, b). Retorna: mdc(a, b).
 int gcd(int a, int b, int coefficients[2]) {
-    int quotients[1024];
+    struct IntList *quotients = il_create();
 
-    return gcd_internal(a, b, 0, quotients, coefficients);
+    int gcd_value = gcd_internal(a, b, &quotients, coefficients);
+
+    free(quotients);
+
+    return gcd_value;
 }
 
 // Primeiro, calcula MDC entre a e m.
