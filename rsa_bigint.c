@@ -47,6 +47,10 @@ struct BigInt *bigint_create(char *number) {
     
 }
 
+int bigint_is_zero(const struct BigInt *bigint) {
+    return bigint->sign == SIGN_ZERO || bigint->size == 0;
+}
+
 static struct BigInt *bigint_remove_leading_zeros(struct BigInt *bigint) {
     uint32_t size = bigint->size;
     for (uint32_t i = bigint->size; i > 0; i--) {
@@ -55,11 +59,14 @@ static struct BigInt *bigint_remove_leading_zeros(struct BigInt *bigint) {
         }
     }
     bigint->size = size;
+    if (size == 0) {
+        bigint->sign = SIGN_ZERO;
+    }
     return (struct BigInt *) realloc(bigint, sizeof(struct BigInt) + size * sizeof(uint32_t));
 }
 
 void bigint_print_as_hex(const struct BigInt *bigint) {
-    if (bigint->size == 0 || bigint->sign == SIGN_ZERO) {
+    if (bigint_is_zero(bigint)) {
         printf("0");
         return;
     }
@@ -142,8 +149,8 @@ struct BigInt *bigint_subtract_bits(const struct BigInt *first, const struct Big
 }
 
 struct BigInt *bigint_add(const struct BigInt *first, const struct BigInt *second) {
-    if (first->sign == SIGN_ZERO) return bigint_copy(second);
-    if (second->sign == SIGN_ZERO) return bigint_copy(first);
+    if (bigint_is_zero(first)) return bigint_copy(second);
+    if (bigint_is_zero(second)) return bigint_copy(first);
 
     struct BigInt *result;
     if (first->sign == second->sign) {
@@ -184,7 +191,9 @@ struct BigInt *bigint_subtract(const struct BigInt *first, const struct BigInt *
 }
 
 struct BigInt *bigint_multiply(const struct BigInt *first, const struct BigInt *second) {
-
+    if (bigint_is_zero(first) || bigint_is_zero(second)) return bigint_create_zero();
+    struct BigInt *result = bigint_create_with_size(first->size + second->size);
+    
 }
 
 // Integer-like division: first // second
