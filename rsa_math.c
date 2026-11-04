@@ -66,6 +66,30 @@ int gcd(int a, int b, int coefficients[2]) {
 // Primeiro, calcula MDC entre a e m.
 // Os coeficientes geram uma equacao na forma xa + ym = 1 (pois mdc(a, m) = 1, ja que a e m sao coprimos).
 // Calculando o modulo: xa + ym = 1 (mod m). Como ym (mod m) = 0: xa = 1 (mod m). Assim, x e o inverso multiplicativo modular de a.
+// Calcula o inverso multiplicativo modular de a modulo m.
+// Retorna -1 caso o inverso nao exista.
 int inverse_mod(int a, int m) {
-    
+    if (m <= 1) {
+        return -1;
+    }
+
+    // Calcula os coeficientes da identidade de Bezout:
+    // ax + my = mdc(a, m).
+    int coefficients[2];
+    int result = gcd(a, m, coefficients);
+
+    // O inverso modular so existe se mdc(a, m) = 1.
+    if (result != 1) {
+        return -1;
+    }
+
+    // O coeficiente x e o inverso modular de a.
+    int inverse = coefficients[0] % m;
+
+    // Ajusta o resultado para um valor nao negativo.
+    if (inverse < 0) {
+        inverse += m;
+    }
+
+    return inverse;
 }
