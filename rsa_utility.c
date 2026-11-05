@@ -2,25 +2,32 @@
 #include "rsa_math.h"
 #include "rsa_utility.h"
 
-// Escaneia uma chave secreta: (p, q, e).
-struct SecretKey scan_secret_key() {
+struct SecretKey scan_secret_key(void) {
+    struct SecretKey key = { 0, 0, 0 };
 
+    if (scanf("%d %d %d", &key.p, &key.q, &key.e) != 3) {
+        return (struct SecretKey){ 0, 0, 0 };
+    }
+
+    return key;
 }
 
-// Escaneia uma chave publica: (n, e).
-struct PublicKey scan_public_key() {
-    
+struct PublicKey scan_public_key(void) {
+    struct PublicKey key = { 0, 0 };
+
+    if (scanf("%d %d", &key.n, &key.e) != 2) {
+        return (struct PublicKey){ 0, 0 };
+    }
+
+    return key;
 }
 
-// Retorna uma chave privada (n, d) a partir de (p, q, e).
 struct PrivateKey to_private_key(struct SecretKey key) {
-    // Calcular d: d = inverso multiplicativo modular de e (mod (p - 1)(q - 1)).
     int d = inverse_mod(key.e, (key.p - 1) * (key.q - 1));
 
     return (struct PrivateKey){ .n = key.p * key.q, .d = d };
 }
 
-// Retorna uma chave publica (n, e) a partir de (p, q, e).
 struct PublicKey to_public_key(struct SecretKey key) {
     return (struct PublicKey){ .n = key.p * key.q, .e = key.e };
 }
