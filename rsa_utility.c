@@ -5,6 +5,8 @@
 struct SecretKey scan_secret_key(void) {
     struct SecretKey key = { 0, 0, 0 };
 
+    printf("Digite p, q, e: ");
+
     if (scanf("%d %d %d", &key.p, &key.q, &key.e) != 3) {
         return (struct SecretKey){ 0, 0, 0 };
     }
@@ -14,6 +16,8 @@ struct SecretKey scan_secret_key(void) {
 
 struct PublicKey scan_public_key(void) {
     struct PublicKey key = { 0, 0 };
+
+    printf("Digite n, e: ");
 
     if (scanf("%d %d", &key.n, &key.e) != 2) {
         return (struct PublicKey){ 0, 0 };
