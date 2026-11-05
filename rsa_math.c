@@ -1,7 +1,8 @@
+#include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "rsa_list.h"
 #include "rsa_math.h"
-#include <stdint.h>
 
 int get_character_code(char c) {
     if (c == ' ') return 28;
@@ -32,7 +33,7 @@ uint64_t mod_pow(uint64_t a, uint64_t b, uint64_t n) {
 }
 
 // Calcula os coeficientes de Bezout pelo Algoritmo de Euclides Estendido.
-static int gcd_internal(uint64_t a, uint64_t b, struct IntList **quotients, int64_t coefficients[2]) {
+static uint64_t gcd_internal(uint64_t a, uint64_t b, struct IntList **quotients, int64_t coefficients[2]) {
     if (b == 0) {
         int quotient_amount = (*quotients)->size;
         // Trata o caso em que nao houve nenhuma divisao.
@@ -68,10 +69,10 @@ static int gcd_internal(uint64_t a, uint64_t b, struct IntList **quotients, int6
 }
 
 // Calcula os coeficientes x e y tais que xa + yb = mdc(a, b). Retorna: mdc(a, b).
-int gcd(int a, int b, int coefficients[2]) {
+uint64_t gcd(uint64_t a, uint64_t b, int64_t coefficients[2]) {
     struct IntList *quotients = il_create();
 
-    int gcd_value = gcd_internal(a, b, &quotients, coefficients);
+    uint64_t gcd_value = gcd_internal(a, b, &quotients, coefficients);
 
     free(quotients);
 
