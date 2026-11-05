@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "rsa_list.h"
 #include "rsa_math.h"
+#include <stdint.h>
 
 int get_character_code(char c) {
     if (c == ' ') return 28;
@@ -26,16 +27,25 @@ void int_array_to_string(int arr[], char str[], int size) {
 }
 
 // Exponenciacao modular rapida
-int mod_pow(int a, int b, int n) {
-    
+uint64_t mod_pow(uint64_t a, uint64_t b, uint64_t n) {
+
 }
 
-static int gcd_internal(int a, int b, struct IntList **quotients, int coefficients[2]) {
+// Calcula os coeficientes de Bezout pelo Algoritmo de Euclides Estendido.
+static int gcd_internal(uint64_t a, uint64_t b, struct IntList **quotients, int64_t coefficients[2]) {
     if (b == 0) {
-        int quotient_amount = (*quotients)->size - 1;
-        int last_result = 0;
-        int result = 1;
-        int temp;
+        int quotient_amount = (*quotients)->size;
+        // Trata o caso em que nao houve nenhuma divisao.
+        if (quotient_amount == 0) {
+            coefficients[0] = 1;
+            coefficients[1] = 0;
+            return a;
+        }
+      
+        quotient_amount--;
+        int64_t last_result = 0;
+        int64_t result = 1;
+        int64_t temp;
         for (int i = quotient_amount - 1; i >= 0; i--) {
             temp = result;
             result = il_get(*quotients, i) * result + last_result;
@@ -53,7 +63,7 @@ static int gcd_internal(int a, int b, struct IntList **quotients, int coefficien
 
         return a;
     }
-    il_add(quotients, a / b);
+    il_add(quotients, (int64_t) a / b);
     return gcd_internal(b, a % b, quotients, coefficients);
 }
 
@@ -68,33 +78,33 @@ int gcd(int a, int b, int coefficients[2]) {
     return gcd_value;
 }
 
-// Primeiro, calcula MDC entre a e m.
-// Os coeficientes geram uma equacao na forma xa + ym = 1 (pois mdc(a, m) = 1, ja que a e m sao coprimos).
-// Calculando o modulo: xa + ym = 1 (mod m). Como ym (mod m) = 0: xa = 1 (mod m). Assim, x e o inverso multiplicativo modular de a.
 // Calcula o inverso multiplicativo modular de a modulo m.
-// Retorna -1 caso o inverso nao exista.
-int inverse_mod(int a, int m) {
+// Retorna 0 caso o inverso nao exista.
+uint64_t inverse_mod(uint64_t a, uint64_t m) {
     if (m <= 1) {
-        return -1;
+        return 0;
     }
+
+    // Reduz a ao modulo m.
+    a %= m;
 
     // Calcula os coeficientes da identidade de Bezout:
     // ax + my = mdc(a, m).
-    int coefficients[2];
-    int result = gcd(a, m, coefficients);
+    int64_t coefficients[2];
+    uint64_t result = gcd(a, m, coefficients);
 
     // O inverso modular so existe se mdc(a, m) = 1.
     if (result != 1) {
-        return -1;
+        return 0;
     }
 
     // O coeficiente x e o inverso modular de a.
-    int inverse = coefficients[0] % m;
+    int64_t inverse = coefficients[0] % (int64_t)m;
 
     // Ajusta o resultado para um valor nao negativo.
     if (inverse < 0) {
-        inverse += m;
+        inverse += (int64_t)m;
     }
 
-    return inverse;
+    return (uint64_t)inverse;
 }
