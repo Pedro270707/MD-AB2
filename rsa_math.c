@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "rsa_list.h"
 #include "rsa_math.h"
 #include <stdint.h>
 
@@ -31,24 +32,23 @@ uint64_t mod_pow(uint64_t a, uint64_t b, uint64_t n) {
 }
 
 // Calcula os coeficientes de Bezout pelo Algoritmo de Euclides Estendido.
-static uint64_t gcd_internal(uint64_t a, uint64_t b, int quotient_amount,
-                             int64_t quotients[], int64_t coefficients[2]) {
+static int gcd_internal(uint64_t a, uint64_t b, struct IntList **quotients, int64_t coefficients[2]) {
     if (b == 0) {
+        int quotient_amount = (*quotients)->size;
         // Trata o caso em que nao houve nenhuma divisao.
         if (quotient_amount == 0) {
             coefficients[0] = 1;
             coefficients[1] = 0;
             return a;
         }
-
+      
         quotient_amount--;
         int64_t last_result = 0;
         int64_t result = 1;
         int64_t temp;
-
         for (int i = quotient_amount - 1; i >= 0; i--) {
             temp = result;
-            result = quotients[i] * result + last_result;
+            result = il_get(*quotients, i) * result + last_result;
             last_result = temp;
         }
 
@@ -63,19 +63,19 @@ static uint64_t gcd_internal(uint64_t a, uint64_t b, int quotient_amount,
 
         return a;
     }
-
-    quotients[quotient_amount] = (int64_t)(a / b);
-
-    return gcd_internal(b, a % b, quotient_amount + 1,
-                        quotients, coefficients);
+    il_add(quotients, (int64_t) a / b);
+    return gcd_internal(b, a % b, quotients, coefficients);
 }
 
-// Calcula os coeficientes x e y tais que xa + yb = mdc(a, b).
-// Retorna o MDC de a e b.
-uint64_t gcd(uint64_t a, uint64_t b, int64_t coefficients[2]) {
-    int64_t quotients[1024];
+// Calcula os coeficientes x e y tais que xa + yb = mdc(a, b). Retorna: mdc(a, b).
+int gcd(int a, int b, int coefficients[2]) {
+    struct IntList *quotients = il_create();
 
-    return gcd_internal(a, b, 0, quotients, coefficients);
+    int gcd_value = gcd_internal(a, b, &quotients, coefficients);
+
+    free(quotients);
+
+    return gcd_value;
 }
 
 // Calcula o inverso multiplicativo modular de a modulo m.
