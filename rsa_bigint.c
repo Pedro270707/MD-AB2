@@ -43,6 +43,15 @@ struct BigInt *bigint_create_from_unumber(uint64_t number) {
     return result;
 }
 
+struct BigInt *bigint_create_from_number(int64_t number) {
+    if (number < 0) {
+        struct BigInt *result = bigint_create_from_unumber((uint64_t) (-number));
+        result->sign = SIGN_NEGATIVE;
+        return result;
+    }
+    return bigint_create_from_unumber((uint64_t) number);
+}
+
 struct BigInt *bigint_create(char *number) {
     
 }
@@ -190,10 +199,31 @@ struct BigInt *bigint_subtract(const struct BigInt *first, const struct BigInt *
     return bigint_add(first, subtracted);
 }
 
+struct BigInt *bigint_grade_school_multiply(const struct BigInt *first, const struct BigInt *second) {
+    uint32_t final_size = first->size + second->size;
+    struct BigInt *result = bigint_create_with_size(final_size);
+
+    for (uint32_t i = 0; i < first->size; i++) {
+        if (first->arr[i] == 0) continue;
+        
+        uint64_t carry = 0;
+        for (uint32_t j = 0; j < second->size; j++) {
+            uint32_t result_index = i + j;
+            uint64_t value = (uint64_t) first->arr[i] * (uint64_t) second->arr[j] + result->arr[result_index] + carry;
+
+            result->arr[result_index] = (uint32_t) value; // least significant 32 bits
+            carry = value >> 32;
+        }
+
+        result->arr[i + second->size] += (uint32_t) carry;
+    }
+
+    return bigint_remove_leading_zeros(result);
+}
+
 struct BigInt *bigint_multiply(const struct BigInt *first, const struct BigInt *second) {
     if (bigint_is_zero(first) || bigint_is_zero(second)) return bigint_create_zero();
-    struct BigInt *result = bigint_create_with_size(first->size + second->size);
-    
+    return bigint_grade_school_multiply(first, second);
 }
 
 // Integer-like division: first // second

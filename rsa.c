@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdlib.h>
 #include <inttypes.h>
 #include "rsa_bigint.h"
 #include "rsa_list.h"
@@ -41,6 +42,35 @@ void debug() {
     uint64_t gcd_value = gcd(a, b, coefficients);
 
     printf("%" PRIu64 " * %" PRId64 " + %" PRIu64 " * %" PRId64 " = %" PRIu64 "\n", a, coefficients[0], b, coefficients[1], gcd_value);
+
+    printf("BigInt\n");
+    printf("Calculos com BigInt:\n");
+    
+    printf("Escreva dois numeros inteiros: ");
+    
+    int64_t c, d;
+
+    if (scanf("%" SCNd64 "%" SCNd64, &c, &d) != 2) {
+        return;
+    }
+
+    struct BigInt *bigint_first = bigint_create_from_number(c);
+    struct BigInt *bigint_second = bigint_create_from_number(d);
+
+    struct BigInt *bigint_added = bigint_add(bigint_first, bigint_second);
+    printf("%" PRId64 " + %" PRId64 " = 0x", c, d);
+    bigint_print_as_hex(bigint_added);
+    
+    struct BigInt *bigint_multiplied = bigint_multiply(bigint_first, bigint_second);
+    printf("%" PRId64 " * %" PRId64 " = 0x", c, d);
+    bigint_print_as_hex(bigint_multiplied);
+
+    printf("\n");
+
+    free(bigint_first);
+    free(bigint_second);
+    free(bigint_added);
+    free(bigint_multiplied);
 }
 
 int main() {
