@@ -1,3 +1,5 @@
+#include <inttypes.h>
+#include <stdint.h>
 #include <stdio.h>
 #include "rsa_math.h"
 #include "rsa_utility.h"
@@ -7,7 +9,7 @@ struct SecretKey scan_secret_key(void) {
 
     printf("Digite p, q, e: ");
 
-    if (scanf("%d %d %d", &key.p, &key.q, &key.e) != 3) {
+    if (scanf("%" SCNu64 "%" SCNu64 "%" SCNu64, &key.p, &key.q, &key.e) != 3) {
         return (struct SecretKey){ 0, 0, 0 };
     }
 
@@ -19,7 +21,7 @@ struct PublicKey scan_public_key(void) {
 
     printf("Digite n, e: ");
 
-    if (scanf("%d %d", &key.n, &key.e) != 2) {
+    if (scanf("%" SCNu64 "%" SCNu64, &key.n, &key.e) != 2) {
         return (struct PublicKey){ 0, 0 };
     }
 

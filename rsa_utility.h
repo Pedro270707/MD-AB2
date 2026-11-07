@@ -1,20 +1,21 @@
 #ifndef RSA_UTILITY_H
 #define RSA_UTILITY_H
+#include <stdint.h>
 
 struct SecretKey {
-    int p;
-    int q;
-    int e;
+    uint64_t p;
+    uint64_t q;
+    uint64_t e;
 };
 
 struct PrivateKey {
-    int n;
-    int d;
+    uint64_t n;
+    uint64_t d;
 };
 
 struct PublicKey {
-    int n;
-    int e;
+    uint64_t n;
+    uint64_t e;
 };
 
 struct SecretKey scan_secret_key(void);

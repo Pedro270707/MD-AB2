@@ -26,24 +26,47 @@ void encrypt() {
     struct PublicKey public_key = scan_public_key();
 }
 
+void debug() {
+    printf("Depuracao\n");
+    printf("MDC\n");
+    printf("Escreva dois numeros inteiros nao negativos: ");
+
+    uint64_t a, b;
+
+    if (scanf("%" SCNu64 "%" SCNu64, &a, &b) != 2) {
+        return;
+    }
+
+    int64_t coefficients[2];
+    uint64_t gcd_value = gcd(a, b, coefficients);
+
+    printf("%" PRIu64 " * %" PRId64 " + %" PRIu64 " * %" PRId64 " = %" PRIu64 "\n", a, coefficients[0], b, coefficients[1], gcd_value);
+}
+
 int main() {
     int key = 0;
 
     do {
         printf("Escolha uma opcao:\n");
+        printf("-1 - Depuracao\n");
         printf("1 - Gerar chave publica\n");
         printf("2 - Criptografar\n");
         printf("3 - Descriptografar\n");
 
         scanf("%d", &key);
 
-        if (key < 1 || key > OPTION_COUNT) {
-            printf("Codigo invalido.\n");
+        if (key != -1 && (key < 1 || key > OPTION_COUNT)) {
+            printf("Codigo invalido: %d.\n", key);
             printf("\n");
+        } else {
+            break;
         }
-    } while (key < 1 || key > OPTION_COUNT);
+    } while (1);
 
     switch (key) {
+        case -1:
+            debug();
+            break;
         case 1:
             generate_public_key();
             break;
