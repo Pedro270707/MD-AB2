@@ -4,6 +4,7 @@
 #include <inttypes.h>
 #include "rsa_bigint.h"
 
+#define KARATSUBA_THRESHOLD 32
 #define max(a,b) (((a) > (b)) ? (a) : (b))
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 
@@ -114,8 +115,16 @@ struct BigInt *bigint_copy(const struct BigInt *bigint) {
     return result;
 }
 
-struct BigInt *bigint_add_bits(const struct BigInt *first, const struct BigInt *second) {
-    uint32_t final_size = max(first->size, second->size) + 1;
+struct BigInt *bigint_add_bits(const struct BigInt *first, const struct BigInt *second, uint32_t offset) {
+    uint32_t final_size;
+    uint32_t max_size = max(first->size, second->size);
+    if (offset == 0) {
+        final_size = max_size + 1;
+    } else {
+        uint32_t min_size = min(first->size, second->size);
+        final_size = max(max_size, min_size + offset) + 1;
+    }
+    
     struct BigInt *result = bigint_create_with_size(final_size);
 
     uint32_t carry = 0;
@@ -125,8 +134,9 @@ struct BigInt *bigint_add_bits(const struct BigInt *first, const struct BigInt *
         if (i < first->size) {
             value += (uint64_t) first->arr[i];
         }
-        if (i < second->size) {
-            value += (uint64_t) second->arr[i];
+        
+        if (i >= offset && (i - offset) < second->size) {
+            value += (uint64_t) second->arr[i - offset];
         }
 
         result->arr[i] = (uint32_t) value; // least significant 32 bits
@@ -163,7 +173,7 @@ struct BigInt *bigint_add(const struct BigInt *first, const struct BigInt *secon
 
     struct BigInt *result;
     if (first->sign == second->sign) {
-        result = bigint_add_bits(first, second);
+        result = bigint_add_bits(first, second, 0);
         result->sign = first->sign;
         return result;
     }

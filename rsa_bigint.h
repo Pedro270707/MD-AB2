@@ -24,7 +24,7 @@ int bigint_is_zero(const struct BigInt *bigint);
 void bigint_print_as_hex(const struct BigInt *bigint);
 int bigint_compare_magnitude(const struct BigInt *first, const struct BigInt *second);
 struct BigInt *bigint_copy(const struct BigInt *bigint);
-struct BigInt *bigint_add_bits(const struct BigInt *first, const struct BigInt *second);
+struct BigInt *bigint_add_bits(const struct BigInt *first, const struct BigInt *second, uint64_t offset);
 struct BigInt *bigint_subtract_bits(const struct BigInt *first, const struct BigInt *second);
 struct BigInt *bigint_add(const struct BigInt *first, const struct BigInt *second);
 struct BigInt *bigint_subtract(const struct BigInt *first, const struct BigInt *second);
