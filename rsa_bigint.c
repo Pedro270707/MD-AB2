@@ -17,6 +17,7 @@ struct BigInt *bigint_create_with_size(uint32_t size) {
 
     list->size = size;
     list->sign = SIGN_POSITIVE;
+    list->arr = (uint32_t *) (list + 1);
 
     return list;
 }
@@ -68,11 +69,21 @@ static struct BigInt *bigint_remove_leading_zeros(struct BigInt *bigint) {
             size--;
         }
     }
+
     bigint->size = size;
     if (size == 0) {
         bigint->sign = SIGN_ZERO;
     }
-    return (struct BigInt *) realloc(bigint, sizeof(struct BigInt) + size * sizeof(uint32_t));
+
+    struct BigInt *new_bigint = (struct BigInt *) realloc(bigint, sizeof(struct BigInt) + size * sizeof(uint32_t));
+    
+    if (new_bigint == NULL) {
+        return NULL;
+    }
+
+    new_bigint->arr = (uint32_t *)(new_bigint + 1);
+
+    return new_bigint;
 }
 
 void bigint_print_as_hex(const struct BigInt *bigint) {
@@ -115,15 +126,11 @@ struct BigInt *bigint_copy(const struct BigInt *bigint) {
     return result;
 }
 
-struct BigInt *bigint_add_bits(const struct BigInt *first, const struct BigInt *second, uint32_t offset) {
+struct BigInt *bigint_add_bits(uint32_t first_size, const uint32_t *first, uint32_t second_size, const uint32_t *second, uint32_t offset) {
     uint32_t final_size;
-    uint32_t max_size = max(first->size, second->size);
-    if (offset == 0) {
-        final_size = max_size + 1;
-    } else {
-        uint32_t min_size = min(first->size, second->size);
-        final_size = max(max_size, min_size + offset) + 1;
-    }
+    uint32_t max_size = max(first_size, second_size);
+    uint32_t min_size = min(first_size, second_size);
+    final_size = max(max_size, min_size + offset) + 1;
     
     struct BigInt *result = bigint_create_with_size(final_size);
 
@@ -131,12 +138,12 @@ struct BigInt *bigint_add_bits(const struct BigInt *first, const struct BigInt *
     for (uint32_t i = 0; i < final_size; i++) {
         uint64_t value = carry;
 
-        if (i < first->size) {
-            value += (uint64_t) first->arr[i];
+        if (i < first_size) {
+            value += (uint64_t) first[i];
         }
         
-        if (i >= offset && (i - offset) < second->size) {
-            value += (uint64_t) second->arr[i - offset];
+        if (i >= offset && (i - offset) < second_size) {
+            value += (uint64_t) second[i - offset];
         }
 
         result->arr[i] = (uint32_t) value; // least significant 32 bits
@@ -173,7 +180,7 @@ struct BigInt *bigint_add(const struct BigInt *first, const struct BigInt *secon
 
     struct BigInt *result;
     if (first->sign == second->sign) {
-        result = bigint_add_bits(first, second, 0);
+        result = bigint_add_bits(first->size, first->arr, second->size, second->arr, 0);
         result->sign = first->sign;
         return result;
     }
@@ -231,9 +238,72 @@ struct BigInt *bigint_grade_school_multiply(const struct BigInt *first, const st
     return bigint_remove_leading_zeros(result);
 }
 
+struct BigInt *bigint_karatsuba_multiply(uint32_t first_size, const uint32_t *first, uint32_t second_size, const uint32_t *second) {
+    if (first_size <= KARATSUBA_THRESHOLD || second_size <= KARATSUBA_THRESHOLD) {
+        struct BigInt temp_1 = (struct BigInt) { .size = first_size, .arr = (uint32_t *) first };
+        struct BigInt temp_2 = (struct BigInt) { .size = second_size, .arr = (uint32_t *) second };
+        return bigint_grade_school_multiply(&temp_1, &temp_2);
+    }
+
+    uint32_t split_point = max(first_size, second_size) / 2;
+
+    uint32_t first_low_size;
+    uint32_t first_high_size;
+    if (first_size < split_point) {
+        first_low_size = first_size;
+        first_high_size = 0;
+    } else {
+        first_low_size = split_point;
+        first_high_size = first_size - split_point;
+    }
+    const uint32_t *first_low = first;
+    const uint32_t *first_high = first + split_point;
+
+    uint32_t second_low_size;
+    uint32_t second_high_size;
+    if (second_size < split_point) {
+        second_low_size = second_size;
+        second_high_size = 0;
+    } else {
+        second_low_size = split_point;
+        second_high_size = second_size - split_point;
+    }
+    const uint32_t *second_low = second;
+    const uint32_t *second_high = second + split_point;
+
+    struct BigInt *low_product = bigint_karatsuba_multiply(first_low_size, first_low, second_low_size, second_low);
+    struct BigInt *high_product = bigint_karatsuba_multiply(first_high_size, first_high, second_high_size, second_high);
+
+    struct BigInt *first_sum = bigint_add_bits(first_low_size, first_low, first_high_size, first_high, 0);
+    struct BigInt *second_sum = bigint_add_bits(second_low_size, second_low, second_high_size, second_high, 0);
+
+    struct BigInt *product = bigint_karatsuba_multiply(first_sum->size, first_sum->arr, second_sum->size, second_sum->arr);
+
+    struct BigInt *subtraction_1 = bigint_subtract(product, low_product);
+    struct BigInt *subtraction_2 = bigint_subtract(subtraction_1, high_product);
+    
+    struct BigInt *result_1 = bigint_add_bits(high_product->size, high_product->arr, subtraction_2->size, subtraction_2->arr, split_point);
+    struct BigInt *result_2 = bigint_add_bits(result_1->size, result_1->arr, low_product->size, low_product->arr, 2 * split_point);
+
+    free(low_product);
+    free(high_product);
+    free(first_sum);
+    free(second_sum);
+    free(product);
+    free(subtraction_1);
+    free(subtraction_2);
+    free(result_1);
+
+    return bigint_remove_leading_zeros(result_2);
+}
+
 struct BigInt *bigint_multiply(const struct BigInt *first, const struct BigInt *second) {
     if (bigint_is_zero(first) || bigint_is_zero(second)) return bigint_create_zero();
-    return bigint_grade_school_multiply(first, second);
+    struct BigInt *result = bigint_karatsuba_multiply(first->size, first->arr, second->size, second->arr);
+    if (first->sign != second->sign) {
+        result->sign = SIGN_NEGATIVE;
+    }
+    return result;
 }
 
 // Integer-like division: first // second

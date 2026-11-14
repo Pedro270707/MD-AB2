@@ -60,11 +60,11 @@ void debug() {
     struct BigInt *bigint_added = bigint_add(bigint_first, bigint_second);
     printf("%" PRId64 " + %" PRId64 " = 0x", c, d);
     bigint_print_as_hex(bigint_added);
+    printf("\n");
     
     struct BigInt *bigint_multiplied = bigint_multiply(bigint_first, bigint_second);
     printf("%" PRId64 " * %" PRId64 " = 0x", c, d);
     bigint_print_as_hex(bigint_multiplied);
-
     printf("\n");
 
     free(bigint_first);

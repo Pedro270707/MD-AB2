@@ -12,7 +12,7 @@ enum Sign {
 struct BigInt {
     enum Sign sign;
     uint32_t size;
-    uint32_t arr[]; // Little-endian
+    uint32_t *arr; // Little-endian
 };
 
 struct BigInt *bigint_create_with_size(uint32_t size);
@@ -24,11 +24,12 @@ int bigint_is_zero(const struct BigInt *bigint);
 void bigint_print_as_hex(const struct BigInt *bigint);
 int bigint_compare_magnitude(const struct BigInt *first, const struct BigInt *second);
 struct BigInt *bigint_copy(const struct BigInt *bigint);
-struct BigInt *bigint_add_bits(const struct BigInt *first, const struct BigInt *second, uint64_t offset);
+struct BigInt *bigint_add_bits(uint32_t first_size, const uint32_t *first, uint32_t second_size, const uint32_t *second, uint32_t offset);
 struct BigInt *bigint_subtract_bits(const struct BigInt *first, const struct BigInt *second);
 struct BigInt *bigint_add(const struct BigInt *first, const struct BigInt *second);
 struct BigInt *bigint_subtract(const struct BigInt *first, const struct BigInt *second);
 struct BigInt *bigint_grade_school_multiply(const struct BigInt *first, const struct BigInt *second);
+struct BigInt *bigint_karatsuba_multiply(uint32_t first_size, const uint32_t *first, uint32_t second_size, const uint32_t *second);
 struct BigInt *bigint_multiply(const struct BigInt *first, const struct BigInt *second);
 struct BigInt *bigint_divide(const struct BigInt *first, const struct BigInt *second);
 
