@@ -23,7 +23,8 @@ void generate_public_key() {
         return;
     }
 
-    fprintf(output, "%d %d\n", public_key.n, public_key.e);
+    fprintf(output, "%" PRIu64 " %" PRIu64 "\n", public_key.n, public_key.e);
+    
     fclose(output);
 }
 
