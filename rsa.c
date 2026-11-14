@@ -9,22 +9,79 @@
 #include "rsa_utility.h"
 
 #define OPTION_COUNT 3
+#define MAX_MESSAGE 1024
+#define OUTPUT_FILE "resultado.txt"
 
-// Imprime uma chave publica (n, e) a partir de (p, q, e).
 void generate_public_key() {
     struct SecretKey secret_key = scan_secret_key();
     struct PublicKey public_key = to_public_key(secret_key);
+
+    FILE *output = fopen(OUTPUT_FILE, "w");
+
+    if (output == NULL) {
+        printf("Erro ao abrir o arquivo %s.\n", OUTPUT_FILE);
+        return;
+    }
+
+    fprintf(output, "%d %d\n", public_key.n, public_key.e);
+    fclose(output);
 }
 
-// Descriptografa uma mensagem usando a chave privada.
 void decrypt() {
     struct SecretKey secret_key = scan_secret_key();
     struct PrivateKey private_key = to_private_key(secret_key);
+
+    int values[MAX_MESSAGE];
+    char message[MAX_MESSAGE + 1];
+    int count = 0;
+    int64_t value;
+
+    while (count < MAX_MESSAGE && scanf("%" SCNd64, &value) == 1) {
+        values[count] = (int)mod_pow((uint64_t)value, (uint64_t)private_key.d, (uint64_t)private_key.n);
+        count++;
+    }
+
+    int_array_to_string(values, message, count);
+    message[count] = '\0';
+
+    FILE *output = fopen(OUTPUT_FILE, "w");
+
+    if (output == NULL) {
+        printf("Erro ao abrir o arquivo %s.\n", OUTPUT_FILE);
+        return;
+    }
+
+    fprintf(output, "%s\n", message);
+    fclose(output);
 }
 
-// Criptografa uma mensagem usando a chave publica.
 void encrypt() {
     struct PublicKey public_key = scan_public_key();
+
+    char message[MAX_MESSAGE + 1];
+    int values[MAX_MESSAGE];
+
+    if (scanf(" %1024[^\n]", message) != 1) {
+        return;
+    }
+
+    int size = (int)strlen(message);
+
+    string_to_int_array(message, values, size);
+
+    FILE *output = fopen(OUTPUT_FILE, "w");
+
+    if (output == NULL) {
+        printf("Erro ao abrir o arquivo %s.\n", OUTPUT_FILE);
+        return;
+    }
+
+    for (int i = 0; i < size; i++) {
+        fprintf(output, "%" PRIu64 " ", mod_pow((uint64_t)values[i], (uint64_t)public_key.e, (uint64_t)public_key.n));
+    }
+
+    fprintf(output, "\n");
+    fclose(output);
 }
 
 void debug() {
@@ -45,9 +102,9 @@ void debug() {
 
     printf("BigInt\n");
     printf("Calculos com BigInt:\n");
-    
+
     printf("Escreva dois numeros inteiros: ");
-    
+
     int64_t c, d;
 
     if (scanf("%" SCNd64 "%" SCNd64, &c, &d) != 2) {

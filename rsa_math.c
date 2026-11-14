@@ -29,7 +29,20 @@ void int_array_to_string(int arr[], char str[], int size) {
 
 // Exponenciacao modular rapida
 uint64_t mod_pow(uint64_t a, uint64_t b, uint64_t n) {
+    uint64_t result = 1;
 
+    a %= n;
+
+    while (b > 0) {
+        if (b % 2 == 1) {
+            result = (result * a) % n;
+        }
+
+        a = (a * a) % n;
+        b /= 2;
+    }
+
+    return result;
 }
 
 // Calcula os coeficientes de Bezout pelo Algoritmo de Euclides Estendido.
