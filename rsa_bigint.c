@@ -8,7 +8,7 @@
 #define max(a,b) (((a) > (b)) ? (a) : (b))
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 
-struct BigInt *bigint_create_with_size(uint32_t size) {
+struct BigInt *bigint_create_with_size(size_t size) {
     struct BigInt *list = (struct BigInt *) malloc(sizeof(struct BigInt) + size * sizeof(uint32_t));
 
     if (list == NULL) {
@@ -63,8 +63,8 @@ int bigint_is_zero(const struct BigInt *bigint) {
 }
 
 static struct BigInt *bigint_remove_leading_zeros(struct BigInt *bigint) {
-    uint32_t size = bigint->size;
-    for (uint32_t i = bigint->size; i > 0; i--) {
+    size_t size = bigint->size;
+    for (size_t i = bigint->size; i > 0; i--) {
         if (bigint->arr[i - 1] == 0) {
             size--;
         }
@@ -96,7 +96,7 @@ void bigint_print_as_hex(const struct BigInt *bigint) {
         printf("-");
     }
 
-    for (uint32_t i = bigint->size; i > 0; i--) {
+    for (size_t i = bigint->size; i > 0; i--) {
         printf("%x", (uint32_t) bigint->arr[i - 1]);
     }
 }
@@ -110,7 +110,7 @@ int bigint_compare_magnitude(const struct BigInt *first, const struct BigInt *se
         return -1;
     }
 
-    for (uint32_t i = first->size; i > 0; i--) {
+    for (size_t i = first->size; i > 0; i--) {
         if (first->arr[i - 1] != second->arr[i - 1]) {
             return first->arr[i - 1] > second->arr[i - 1] ? 1 : -1;
         }
@@ -120,22 +120,76 @@ int bigint_compare_magnitude(const struct BigInt *first, const struct BigInt *se
 
 struct BigInt *bigint_copy(const struct BigInt *bigint) {
     struct BigInt *result = bigint_create_with_size(bigint->size);
-    for (uint32_t i = 0; i < bigint->size; i++) {
+    for (size_t i = 0; i < bigint->size; i++) {
         result->arr[i] = bigint->arr[i];
     }
     return result;
 }
 
-struct BigInt *bigint_add_bits(uint32_t first_size, const uint32_t *first, uint32_t second_size, const uint32_t *second, uint32_t offset) {
-    uint32_t final_size;
-    uint32_t max_size = max(first_size, second_size);
-    uint32_t min_size = min(first_size, second_size);
+struct BigInt *bigint_shl(const struct BigInt *bigint, size_t shift) {
+    if (bigint_is_zero(bigint) || shift == 0) {
+        return bigint_copy(bigint);
+    }
+
+    size_t limb_shift = shift / 32;
+    size_t bit_shift = shift % 32;
+    size_t complement = 32 - bit_shift;
+
+    struct BigInt *result = bigint_create_with_size(bigint->size + limb_shift + 1);
+
+    if (limb_shift > 0) {
+        memset(result->arr, 0, limb_shift * sizeof(uint32_t));
+    }
+
+    if (bit_shift == 0) {
+        memcpy(result->arr + limb_shift, bigint->arr, bigint->size * sizeof(uint32_t));
+        res->arr[bigint->size + limb_shift] = 0;
+    } else {
+        uint32_t carry = 0;
+        for (size_t i = 0; i < bigint->size; i++) {
+            res->arr[i + limb_shift] = bigint->arr[i] << bit_shift | carry;
+            carry = bigint->arr[i] >> complement;
+        }
+        res->arr[bigint->size + limb_shift] = carry;
+    }
+
+    return bigint_remove_leading_zeros(result);
+}
+
+struct BigInt *bigint_shr(const struct BigInt *bigint, size_t shift) {
+    if (bigint_is_zero(bigint) || shift == 0) {
+        return bigint_copy(bigint);
+    }
+
+    size_t limb_shift = shift / 32;
+    size_t bit_shift = shift % 32;
+    size_t complement = 32 - bit_shift;
+
+    struct BigInt *result = bigint_create_with_size(bigint->size - limb_shift);
+
+    if (bit_shift == 0) {
+        memcpy(result->arr, bigint->arr, result->size * sizeof(uint32_t));
+    } else {
+        uint32_t carry = 0;
+        for (size_t i = bigint->size - 1; i-- > 0; ) {
+            res->arr[i - limb_shift] = bigint->arr[i] >> bit_shift | carry;
+            carry = bigint->arr[i] << complement;
+        }
+    }
+
+    return bigint_remove_leading_zeros(result);
+}
+
+struct BigInt *bigint_add_bits(size_t first_size, const uint32_t *first, size_t second_size, const uint32_t *second, size_t offset) {
+    size_t final_size;
+    size_t max_size = max(first_size, second_size);
+    size_t min_size = min(first_size, second_size);
     final_size = max(max_size, min_size + offset) + 1;
     
     struct BigInt *result = bigint_create_with_size(final_size);
 
     uint32_t carry = 0;
-    for (uint32_t i = 0; i < final_size; i++) {
+    for (size_t i = 0; i < final_size; i++) {
         uint64_t value = carry;
 
         if (i < first_size) {
@@ -158,7 +212,7 @@ struct BigInt *bigint_subtract_bits(const struct BigInt *first, const struct Big
     struct BigInt *result = bigint_create_with_size(first->size);
 
     uint32_t borrow = 0;
-    uint32_t i;
+    size_t i;
     for (i = 0; i < second->size; i++) {
         uint64_t value = (uint64_t) first->arr[i] - (uint64_t) second->arr[i] - borrow;
         result->arr[i] = (uint32_t) value; // least significant 32 bits
@@ -217,15 +271,15 @@ struct BigInt *bigint_subtract(const struct BigInt *first, const struct BigInt *
 }
 
 struct BigInt *bigint_grade_school_multiply(const struct BigInt *first, const struct BigInt *second) {
-    uint32_t final_size = first->size + second->size;
+    size_t final_size = first->size + second->size;
     struct BigInt *result = bigint_create_with_size(final_size);
 
-    for (uint32_t i = 0; i < first->size; i++) {
+    for (size_t i = 0; i < first->size; i++) {
         if (first->arr[i] == 0) continue;
         
         uint64_t carry = 0;
-        for (uint32_t j = 0; j < second->size; j++) {
-            uint32_t result_index = i + j;
+        for (size_t j = 0; j < second->size; j++) {
+            size_t result_index = i + j;
             uint64_t value = (uint64_t) first->arr[i] * (uint64_t) second->arr[j] + result->arr[result_index] + carry;
 
             result->arr[result_index] = (uint32_t) value; // least significant 32 bits
@@ -238,17 +292,17 @@ struct BigInt *bigint_grade_school_multiply(const struct BigInt *first, const st
     return bigint_remove_leading_zeros(result);
 }
 
-struct BigInt *bigint_karatsuba_multiply(uint32_t first_size, const uint32_t *first, uint32_t second_size, const uint32_t *second) {
+struct BigInt *bigint_karatsuba_multiply(size_t first_size, const uint32_t *first, size_t second_size, const uint32_t *second) {
     if (first_size <= KARATSUBA_THRESHOLD || second_size <= KARATSUBA_THRESHOLD) {
         struct BigInt temp_1 = (struct BigInt) { .size = first_size, .arr = (uint32_t *) first };
         struct BigInt temp_2 = (struct BigInt) { .size = second_size, .arr = (uint32_t *) second };
         return bigint_grade_school_multiply(&temp_1, &temp_2);
     }
 
-    uint32_t split_point = max(first_size, second_size) / 2;
+    size_t split_point = max(first_size, second_size) / 2;
 
-    uint32_t first_low_size;
-    uint32_t first_high_size;
+    size_t first_low_size;
+    size_t first_high_size;
     if (first_size < split_point) {
         first_low_size = first_size;
         first_high_size = 0;
@@ -259,8 +313,8 @@ struct BigInt *bigint_karatsuba_multiply(uint32_t first_size, const uint32_t *fi
     const uint32_t *first_low = first;
     const uint32_t *first_high = first + split_point;
 
-    uint32_t second_low_size;
-    uint32_t second_high_size;
+    size_t second_low_size;
+    size_t second_high_size;
     if (second_size < split_point) {
         second_low_size = second_size;
         second_high_size = 0;
