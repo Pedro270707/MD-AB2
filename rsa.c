@@ -41,6 +41,7 @@ void decrypt() {
     int count = 0;
     int64_t value;
 
+    printf("Digite a mensagem criptografada: ");
     while (count < MAX_MESSAGE && scanf("%" SCNd64, &value) == 1) {
         values[count] = (int)mod_pow((uint64_t)value, (uint64_t)private_key.d, (uint64_t)private_key.n);
         count++;
@@ -65,10 +66,10 @@ void decrypt() {
 void encrypt() {
     struct PublicKey public_key = scan_public_key();
 
-    printf("Digite a mensagem: ");
     char message[MAX_MESSAGE + 1];
     int values[MAX_MESSAGE];
 
+    printf("Digite a mensagem: ");
     if (scanf(" %1024[^\n]", message) != 1) {
         return;
     }
