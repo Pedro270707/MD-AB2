@@ -10,22 +10,26 @@
 
 #define OPTION_COUNT 3
 #define MAX_MESSAGE 1024
-#define OUTPUT_FILE "resultado.txt"
+#define PUBLIC_KEY_OUTPUT_FILE "public_key.txt"
+#define DECRYPTED_OUTPUT_FILE "decrypted.txt"
+#define ENCRYPTED_OUTPUT_FILE "encrypted.txt"
 
 void generate_public_key() {
     struct SecretKey secret_key = scan_secret_key();
     struct PublicKey public_key = to_public_key(secret_key);
 
-    FILE *output = fopen(OUTPUT_FILE, "w");
+    FILE *output = fopen(PUBLIC_KEY_OUTPUT_FILE, "w");
 
     if (output == NULL) {
-        printf("Erro ao abrir o arquivo %s.\n", OUTPUT_FILE);
+        printf("Erro ao abrir o arquivo %s.\n", PUBLIC_KEY_OUTPUT_FILE);
         return;
     }
 
     fprintf(output, "%" PRIu64 " %" PRIu64 "\n", public_key.n, public_key.e);
+    printf("%" PRIu64 " %" PRIu64 "\n", public_key.n, public_key.e);
     
     fclose(output);
+    printf("Salvo em %s\n", PUBLIC_KEY_OUTPUT_FILE);
 }
 
 void decrypt() {
@@ -45,20 +49,23 @@ void decrypt() {
     int_array_to_string(values, message, count);
     message[count] = '\0';
 
-    FILE *output = fopen(OUTPUT_FILE, "w");
+    FILE *output = fopen(DECRYPTED_OUTPUT_FILE, "w");
 
     if (output == NULL) {
-        printf("Erro ao abrir o arquivo %s.\n", OUTPUT_FILE);
+        printf("Erro ao abrir o arquivo %s.\n", DECRYPTED_OUTPUT_FILE);
         return;
     }
 
     fprintf(output, "%s\n", message);
+    printf("%s\n", message);
     fclose(output);
+    printf("Salvo em %s\n", DECRYPTED_OUTPUT_FILE);
 }
 
 void encrypt() {
     struct PublicKey public_key = scan_public_key();
 
+    printf("Digite a mensagem: ");
     char message[MAX_MESSAGE + 1];
     int values[MAX_MESSAGE];
 
@@ -70,19 +77,23 @@ void encrypt() {
 
     string_to_int_array(message, values, size);
 
-    FILE *output = fopen(OUTPUT_FILE, "w");
+    FILE *output = fopen(ENCRYPTED_OUTPUT_FILE, "w");
 
     if (output == NULL) {
-        printf("Erro ao abrir o arquivo %s.\n", OUTPUT_FILE);
+        printf("Erro ao abrir o arquivo %s.\n", ENCRYPTED_OUTPUT_FILE);
         return;
     }
 
     for (int i = 0; i < size; i++) {
-        fprintf(output, "%" PRIu64 " ", mod_pow((uint64_t)values[i], (uint64_t)public_key.e, (uint64_t)public_key.n));
+        uint64_t result = mod_pow((uint64_t)values[i], (uint64_t)public_key.e, (uint64_t)public_key.n);
+        fprintf(output, "%" PRIu64 " ", result);
+        printf("%" PRIu64 " ", result);
     }
 
     fprintf(output, "\n");
+    printf("\n");
     fclose(output);
+    printf("Salvo em %s\n", ENCRYPTED_OUTPUT_FILE);
 }
 
 void debug() {
