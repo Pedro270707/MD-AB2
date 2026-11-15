@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <inttypes.h>
+#include <string.h>
 #include "rsa_bigint.h"
 
 #define KARATSUBA_THRESHOLD 32
@@ -143,14 +144,14 @@ struct BigInt *bigint_shl(const struct BigInt *bigint, size_t shift) {
 
     if (bit_shift == 0) {
         memcpy(result->arr + limb_shift, bigint->arr, bigint->size * sizeof(uint32_t));
-        res->arr[bigint->size + limb_shift] = 0;
+        result->arr[bigint->size + limb_shift] = 0;
     } else {
         uint32_t carry = 0;
         for (size_t i = 0; i < bigint->size; i++) {
-            res->arr[i + limb_shift] = bigint->arr[i] << bit_shift | carry;
+            result->arr[i + limb_shift] = bigint->arr[i] << bit_shift | carry;
             carry = bigint->arr[i] >> complement;
         }
-        res->arr[bigint->size + limb_shift] = carry;
+        result->arr[bigint->size + limb_shift] = carry;
     }
 
     return bigint_remove_leading_zeros(result);
@@ -172,7 +173,7 @@ struct BigInt *bigint_shr(const struct BigInt *bigint, size_t shift) {
     } else {
         uint32_t carry = 0;
         for (size_t i = bigint->size - 1; i-- > 0; ) {
-            res->arr[i - limb_shift] = bigint->arr[i] >> bit_shift | carry;
+            result->arr[i - limb_shift] = bigint->arr[i] >> bit_shift | carry;
             carry = bigint->arr[i] << complement;
         }
     }

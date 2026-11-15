@@ -26,7 +26,7 @@ int bigint_compare_magnitude(const struct BigInt *first, const struct BigInt *se
 struct BigInt *bigint_copy(const struct BigInt *bigint);
 struct BigInt *bigint_shl(const struct BigInt *bigint, size_t shift);
 struct BigInt *bigint_shr(const struct BigInt *bigint, size_t shift);
-struct BigInt *bigint_add_bits(size_t first_size, const uint32_t *first, size_t second_size, const uint32_t *second, uint32_t offset);
+struct BigInt *bigint_add_bits(size_t first_size, const uint32_t *first, size_t second_size, const uint32_t *second, size_t offset);
 struct BigInt *bigint_subtract_bits(const struct BigInt *first, const struct BigInt *second);
 struct BigInt *bigint_add(const struct BigInt *first, const struct BigInt *second);
 struct BigInt *bigint_subtract(const struct BigInt *first, const struct BigInt *second);
